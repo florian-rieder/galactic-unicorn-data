@@ -1,5 +1,5 @@
 return {
   title = "Snake",
   color = rgb(0, 255, 0),
-  author = "Florian Rieder"
+  author = "Florian Rieder",
 }
