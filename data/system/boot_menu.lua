@@ -1,5 +1,4 @@
--- Load the manifest through a Lua require, which will execute the manifest script (which is actually just a lua file that sets a global variable)
-
+ENTRYPOINT_SCRIPT_NAME = "main.lua"
 _MANIFEST = {}
 
 CURSOR_COLOR = rgb(255, 255, 255)
@@ -20,8 +19,10 @@ cursor_y = 0
 held = {}
 hold_state = {}
 
--- Create the composite _MANIFEST variable from a file system walk
-function composite_manifest()
+-- Create the composite manifest table from a file system walk
+-- Any top level directory containing a `manifest.lson` file is considered to be a game
+-- `main.lua` will be used as the entrypoint for that game.
+function collect_manifests()
   local manifest = {}
 
   local nodes = list_directory("/")
@@ -34,8 +35,17 @@ function composite_manifest()
       for j_path, j_node_type in pairs(nodes_in_dir) do
         if string.find(j_path, "manifest.lson") then
           -- a manifest fragment MUST return a table with at least a "color" and "title" field
-          local manifest_fragment = require(j_path)
-          table.insert(manifest, manifest_fragment)
+          -- Load the manifest through a Lua require, which will execute the manifest script (which
+          -- is actually just a lua file that sets a global variable)
+          local metadata = require(j_path)
+
+          local game = {
+            -- Get the entrypoint path
+            entrypoint = i_path .. ENTRYPOINT_SCRIPT_NAME,
+            metadata = metadata
+          }
+
+          table.insert(manifest, game)
         end
       end
     end
@@ -81,7 +91,7 @@ function tile_to_manifest_index(tx, ty)
 end
 
 function setup()
-  _MANIFEST = composite_manifest()
+  _MANIFEST = collect_manifests()
   refresh_tile_geometry_from_manifest()
 end
 
@@ -119,7 +129,7 @@ function draw()
         -- Draw a tile representing the game in the menu
         local px = tx * TILE
         local py = ty * TILE
-        rect(px, py, TILE, TILE, game.color)
+        rect(px, py, TILE, TILE, game.metadata.color)
       end
     end
   end
@@ -151,7 +161,7 @@ function on_press(button)
     local game = _MANIFEST[i]
     if game then
       -- Special privileged binding, only available in this boot menu context, to launch a game by its path.
-      launch_game(game.path)
+      launch_game(game.entrypoint)
     end
   end
 
