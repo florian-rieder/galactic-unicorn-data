@@ -51,6 +51,10 @@ function collect_manifests()
     end
   end
 
+  table.sort(manifest, function(a, b)
+    return a.metadata.title < b.metadata.title
+  end)
+
   return manifest
 end
 
