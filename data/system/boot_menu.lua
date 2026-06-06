@@ -29,20 +29,19 @@ function collect_manifests()
 
   for i_path, i_node_type in pairs(nodes) do
     if i_node_type == false then -- if directory
-      -- Try to find a manifest.lson file in any first-level directory
+      -- Try to find a manifest.lua file in any first-level directory
       local nodes_in_dir = list_directory(i_path)
 
       for j_path, j_node_type in pairs(nodes_in_dir) do
-        if string.find(j_path, "manifest.lson") then
-          -- convert the file path into a module name by removing the extension and replacing the
+        if string.find(j_path, "manifest.lua") then
+          -- Convert the file path into a module name by removing the extension and replacing the
           -- path separator with a dot
-          local module_name = string.gsub(j_path, ".lson$", "")
+          local module_name = string.gsub(j_path, ".lua$", "")
           module_name = module_name:sub(2) -- Remove the leading slash
           module_name = string.gsub(module_name, "/", ".")
 
           -- A manifest fragment MUST return a table with at least a "color" and "title" field
-          -- Load the manifest through a Lua require, which will execute the manifest script (which
-          -- is actually just a lua file that sets a global variable)
+          -- Load the manifest through a Lua require, which will execute the manifest script.
           local metadata = require(module_name)
 
           local game = {
