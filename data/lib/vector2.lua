@@ -141,6 +141,11 @@ function Vector2.mt:copy()
   return Vector2.copy(self)
 end
 
+-- Return a floored copy of this vector
+function Vector2.mt:floor()
+  return Vector2.new(math.floor(self.x), math.floor(self.y))
+end
+
 -- Module definition
 
 
@@ -244,6 +249,10 @@ if (...) == nil then
 
   local ok, err = pcall(function() return v1 * "hello" end)
   assert(not ok, "multiplying a Vector2 by a string should throw")
+
+  local float_vector = Vector2.new(1.45, 2.8)
+  local floored = float_vector:floor()
+  assert(floored.x == 1 and floored.y == 2)
 
   print("Vector2: all tests passed !")
 end
