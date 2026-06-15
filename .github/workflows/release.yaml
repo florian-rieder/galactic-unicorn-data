@@ -27,19 +27,3 @@ jobs:
           working_directory: dist
           files: |
             data.zip
-
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          path: dist
-
-  # Make a pages deployment, just to get an HTTP fetchable without a 302 CORS error
-  # See https://blog.jim-nielsen.com/2021/fetch-and-3xx-redirect-status-codes/
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
