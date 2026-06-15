@@ -2,7 +2,7 @@
 -- Draw an antialiased line between two points
 -- see https://en.wikipedia.org/wiki/Xiaolin_Wu%27s_line_algorithm
 
--- fractional part of x
+-- Fractional part of x
 local function fpart(x)
   return x - math.floor(x)
 end
@@ -14,7 +14,7 @@ end
 local function aa_line(x0, y0, x1, y1, rgb_color)
   local steep = math.abs(y1 - y0) > math.abs(x1 - x0)
 
-  -- Steep: swap x and y to draw by row
+  -- Steep: swap x and y to draw by row instead of by column
   if steep then
     x0, y0 = y0, x0
     x1, y1 = y1, x1
@@ -26,10 +26,9 @@ local function aa_line(x0, y0, x1, y1, rgb_color)
     y0, y1 = y1, y0
   end
 
-  -- m = (y1 - y0) / (x1 - x0)
   local slope = (y1 - y0) / (x1 - x0)
 
-  -- handle first endpoint
+  -- Handle first endpoint
   local xend = math.floor(x0)
   local yend = y0 + slope * (xend - x0)
   local xgap = 1 - (x0 - xend)
@@ -47,7 +46,7 @@ local function aa_line(x0, y0, x1, y1, rgb_color)
 
   local intery = yend + slope -- first y-intersection for the main loop
   
-  -- handle second endpoint
+  -- Handle second endpoint
   xend = math.ceil(x1)
   yend = y1 + slope * (xend - x1)
   xgap = 1 - (xend - x1)
@@ -63,7 +62,7 @@ local function aa_line(x0, y0, x1, y1, rgb_color)
       set_pixel_blend(xpxl2, ypxl2+1, rgb_color, fpart(yend) * xgap)
   end
 
-  -- main loop
+  -- Main loop
   local lower, upper, frac
   for i = xpxl1 + 1, xpxl2 - 1 do
     lower = math.floor(intery)
@@ -79,7 +78,6 @@ local function aa_line(x0, y0, x1, y1, rgb_color)
     end
     intery = intery + slope
   end
-
 end
 
 if (...) == nil then
@@ -92,7 +90,7 @@ if (...) == nil then
   -- Steep slope with second point larger than first
   aa_line(2, 9, 3, 0, rgb(255, 255, 0))
   -- With float coordinates
-  aa_line(0.5, 4.1, 17.3, 8.6, rgb(255, 255, 255))
+  aa_line(0.5, 4.1, 17.3, 8.6, rgb(0, 255, 255))
 end
 
 return aa_line
