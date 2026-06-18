@@ -2,17 +2,14 @@
 -- It's a 3D cube !
 
 local line = require("lib.aaline")
+local Vector3 = require("lib.vector3")
 
 local CUBE_COLOR_PERSPECTIVE = rgb(0, 255, 0)
 local CUBE_COLOR_ORTHO = rgb(97, 142, 255)
 local CAMERA_DISTANCE = 2
 local CAMERA_SCALE = SCREEN_H / 2
 local ROTATION_SPEED = 0.75
-local ROTATION_FACTOR = {
-  x = 1,
-  y = 0.7,
-  z = 0
-}
+local ROTATION_FACTOR = Vector3.new(1, 0.7, 0)
 local SCREEN_CENTER = {
   x = SCREEN_W / 2,
   y = SCREEN_H / 2
@@ -23,67 +20,44 @@ local projection_perspective = true
 local cube_color = CUBE_COLOR_PERSPECTIVE
 
 local vertices = {
-  {1, 1, 1},
-  {1, -1, 1},
-  {-1, 1, 1},
-  {1, 1, -1},
-  {-1, -1, 1},
-  {1, -1, -1},
-  {-1, 1, -1},
-  {-1, -1, -1},
+  Vector3.new(1, 1, 1),
+  Vector3.new(1, -1, 1),
+  Vector3.new(-1, 1, 1),
+  Vector3.new(1, 1, -1),
+  Vector3.new(-1, -1, 1),
+  Vector3.new(1, -1, -1),
+  Vector3.new(-1, 1, -1),
+  Vector3.new(-1, -1, -1),
 }
 local edges = {}
+local projected_vertices = {}
+
 
 -- Projection
 
-local function project_ortho(x, y, z)
-  return {
-    x = ((x + 1)/2) * (SCREEN_H - 1) + SCREEN_W / 4,
-    y = ((y + 1)/2) * (SCREEN_H - 1),
-    depth = 1,
-  }
+local function project_ortho(vec)
+  return Vector3.new(
+    ((vec.x + 1)/2) * (SCREEN_H - 1) + SCREEN_W / 4,
+    ((vec.y + 1)/2) * (SCREEN_H - 1),
+    1
+  )
 end
 
-local function project_perspective(x, y, z)
-  local depth = z + CAMERA_DISTANCE
-  local px = x / depth
-  local py = y / depth
+local function project_perspective(vec)
+  local depth = vec.z + CAMERA_DISTANCE
+  local px = vec.x / depth
+  local py = vec.y / depth
 
-  return {
-    x = px * CAMERA_SCALE + SCREEN_CENTER.x,
-    y = py * CAMERA_SCALE + SCREEN_CENTER.y,
-    depth = depth
-  }
-end
-
--- Rotation
-
-function rotate_x(x, y, z, angle)
-  return {
-    x,
-    y * math.cos(angle) - z * math.sin(angle),
-    y * math.sin(angle) + z * math.cos(angle)
-  }
-end
-
-function rotate_y(x, y, z, angle)
-  return {
-    x * math.cos(angle) - z * math.sin(angle),
-    y,
-    x * math.sin(angle) + z * math.cos(angle)
-  }
-end
-
-function rotate_z(x, y, z, angle)
-  return {
-    x * math.cos(angle) - y * math.sin(angle),
-    x * math.sin(angle) + y * math.cos(angle),
-    z
-  }
+  return Vector3.new(
+    px * CAMERA_SCALE + SCREEN_CENTER.x,
+    py * CAMERA_SCALE + SCREEN_CENTER.y,
+    depth
+  )
 end
 
 function setup()
-  -- Find all edges
+  -- Generate edges of the cube
+  local diff = Vector3.ZERO
   local checked_combinations = {}
   for i,v in ipairs(vertices) do
     for j,w in ipairs(vertices) do
@@ -96,12 +70,12 @@ function setup()
         checked_combinations[key] = true
 
         -- Find coordinate differences
-        diff_x = v[1] ~= w[1] and 1 or 0
-        diff_y = v[2] ~= w[2] and 1 or 0
-        diff_z = v[3] ~= w[3] and 1 or 0
+        diff.x = v.x ~= w.x and 1 or 0
+        diff.y = v.y ~= w.y and 1 or 0
+        diff.z = v.z ~= w.z and 1 or 0
 
         -- if only one coordinate is different, then we have an edge of the cube
-        if (diff_x + diff_y + diff_z == 1) then
+        if (diff.x + diff.y + diff.z == 1) then
           table.insert(edges, {a, b})
         end
       end
@@ -116,32 +90,33 @@ end
 function draw()
   clear()
 
-  local edge_a, edge_b, screen_a, screen_b
+  local angles = ROTATION_FACTOR * t
 
-  -- Iterate over every edge in the cube
-  for _, edge in ipairs(edges) do
-    edge_a = vertices[edge[1]]
-    edge_b = vertices[edge[2]]
+  -- Transform every vertice in the cube
+  for i, vertice in ipairs(vertices) do
+    -- Apply rotation to the vertice
+    vertice = Vector3.rotate(vertice, Vector3.LEFT, angles.x)
+    vertice = Vector3.rotate(vertice, Vector3.UP, angles.y)
+    vertice = Vector3.rotate(vertice, Vector3.FORWARD, angles.z)
 
-    -- Apply rotation
-    edge_a = rotate_x(edge_a[1], edge_a[2], edge_a[3], t * ROTATION_FACTOR.x)
-    edge_b = rotate_x(edge_b[1], edge_b[2], edge_b[3], t * ROTATION_FACTOR.x)
-    edge_a = rotate_y(edge_a[1], edge_a[2], edge_a[3], t * ROTATION_FACTOR.y)
-    edge_b = rotate_y(edge_b[1], edge_b[2], edge_b[3], t * ROTATION_FACTOR.y)
-    edge_a = rotate_z(edge_a[1], edge_a[2], edge_a[3], t * ROTATION_FACTOR.z)
-    edge_b = rotate_z(edge_b[1], edge_b[2], edge_b[3], t * ROTATION_FACTOR.z)
-
-    -- Project the edge's coordinates onto the screen
+    -- Project the vertices to the screen
     if projection_perspective then
-      screen_a = project_perspective(edge_a[1], edge_a[2], edge_a[3])
-      screen_b = project_perspective(edge_b[1], edge_b[2], edge_b[3])
+      vertice = project_perspective(vertice)
     else
-      screen_a = project_ortho(edge_a[1], edge_a[2], edge_a[3])
-      screen_b = project_ortho(edge_b[1], edge_b[2], edge_b[3])
+      vertice = project_ortho(vertice)
     end
 
+    projected_vertices[i] = vertice
+  end
+
+  -- Draw every edge in the cube
+  local a,b
+  for _, edge in ipairs(edges) do
+    a = projected_vertices[edge[1]]
+    b = projected_vertices[edge[2]]
+
     -- Draw the edge
-    line(screen_a.x, screen_a.y, screen_b.x, screen_b.y, cube_color, 1 / screen_a.depth, 1 / screen_b.depth)
+    line(a.x, a.y, b.x, b.y, cube_color, 1 / a.z, 1 / b.z)
   end
 end
 
