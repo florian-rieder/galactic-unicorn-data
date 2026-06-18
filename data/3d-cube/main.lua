@@ -3,7 +3,7 @@
 
 local line = require("lib.aaline")
 
-local CUBE_COLOR_PERSPECTIVE = rgb(69, 215, 84)
+local CUBE_COLOR_PERSPECTIVE = rgb(0, 255, 0)
 local CUBE_COLOR_ORTHO = rgb(97, 142, 255)
 local CAMERA_DISTANCE = 2
 local CAMERA_SCALE = SCREEN_H / 2
@@ -18,7 +18,7 @@ local SCREEN_CENTER = {
   y = SCREEN_H / 2
 }
 
-local t = 0
+local t = math.pi
 local projection_perspective = true
 local cube_color = CUBE_COLOR_PERSPECTIVE
 
@@ -39,17 +39,20 @@ local edges = {}
 local function project_ortho(x, y, z)
   return {
     x = ((x + 1)/2) * (SCREEN_H - 1) + SCREEN_W / 4,
-    y = ((y + 1)/2) * (SCREEN_H - 1)
+    y = ((y + 1)/2) * (SCREEN_H - 1),
+    depth = 1,
   }
 end
 
 local function project_perspective(x, y, z)
-  local px = x / (z + CAMERA_DISTANCE)
-  local py = y / (z + CAMERA_DISTANCE)
+  local depth = z + CAMERA_DISTANCE
+  local px = x / depth
+  local py = y / depth
 
   return {
     x = px * CAMERA_SCALE + SCREEN_CENTER.x,
-    y = py * CAMERA_SCALE + SCREEN_CENTER.y
+    y = py * CAMERA_SCALE + SCREEN_CENTER.y,
+    depth = depth
   }
 end
 
@@ -136,9 +139,9 @@ function draw()
       screen_a = project_ortho(edge_a[1], edge_a[2], edge_a[3])
       screen_b = project_ortho(edge_b[1], edge_b[2], edge_b[3])
     end
-  
+
     -- Draw the edge
-    line(screen_a.x, screen_a.y, screen_b.x, screen_b.y, cube_color)
+    line(screen_a.x, screen_a.y, screen_b.x, screen_b.y, cube_color, 1 / screen_a.depth, 1 / screen_b.depth)
   end
 end
 
