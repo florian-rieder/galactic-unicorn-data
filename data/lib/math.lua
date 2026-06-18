@@ -1,12 +1,12 @@
-function clamp(value, min, max)
+local function clamp(value, min, max)
   return math.max(min, math.min(max, value))
 end
 
-function clamp01(value)
+local function clamp01(value)
   return clamp(value, 0, 1)
 end
 
-function lerp(from, to, time)
+local function lerp(from, to, time)
     return from + time * (to - from)
 end
 
