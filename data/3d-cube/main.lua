@@ -92,21 +92,21 @@ function draw()
 
   local angles = ROTATION_FACTOR * t
 
-  -- Transform every vertice in the cube
-  for i, vertice in ipairs(vertices) do
-    -- Apply rotation to the vertice
-    vertice = Vector3.rotate(vertice, Vector3.LEFT, angles.x)
-    vertice = Vector3.rotate(vertice, Vector3.UP, angles.y)
-    vertice = Vector3.rotate(vertice, Vector3.FORWARD, angles.z)
+  -- Transform every vertex in the cube
+  for i, vertex in ipairs(vertices) do
+    -- Apply rotation to the vertex
+    vertex = Vector3.rotate(vertex, Vector3.LEFT, angles.x)
+    vertex = Vector3.rotate(vertex, Vector3.UP, angles.y)
+    vertex = Vector3.rotate(vertex, Vector3.FORWARD, angles.z)
 
     -- Project the vertices to the screen
     if projection_perspective then
-      vertice = project_perspective(vertice)
+      vertex = project_perspective(vertex)
     else
-      vertice = project_ortho(vertice)
+      vertex = project_ortho(vertex)
     end
 
-    projected_vertices[i] = vertice
+    projected_vertices[i] = vertex
   end
 
   -- Draw every edge in the cube
