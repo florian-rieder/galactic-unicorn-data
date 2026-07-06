@@ -44,6 +44,8 @@ local function note_to_frequency(note)
     error("Invalid note: " .. note, 2);
   end
 
+  -- Convert the MIDI note number to frequency using the formula:
+  -- See https://en.wikipedia.org/wiki/MIDI_tuning_standard#Frequency_values
   local n = (octave + 1) * 12 + semitone;
   return 440 * 2 ^ ((n - 69) / 12);
 end
@@ -125,6 +127,7 @@ function Music.play(music_string, do_loop)
   end
 
   is_playing = true;
+  index = 1;
 end
 
 function Music.pause()
@@ -144,6 +147,7 @@ function Music.stop()
   is_playing = false;
   time_since_last_note = 0;
   last_note_duration = 0;
+  index = 1;
 end
 
 function Music.is_playing()
