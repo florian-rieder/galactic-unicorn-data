@@ -47,34 +47,19 @@ LEVEL_COLORS = {
 PLAYER_COLOR = rgb(255, 255, 255)
 
 -- Repeat-on-hold
-local INITIAL_DELAY = 0.25
+local REPEAT_DELAY = 0.25
 local REPEAT_INTERVAL = 0.1
 
 local current_level_index = 1
 local player_pos
-local held = {}
-local hold_state = {}
 
 function setup()
   player_pos = find_start_pos()
+  set_repeat_delay(REPEAT_DELAY)
+  set_repeat_interval(REPEAT_INTERVAL)
 end
 
 function update(dt)
-  local now = get_time()
-
-  for button, _ in pairs(held) do
-    local state = hold_state[button]
-    if state then
-      local held_time = now - state.start
-      if held_time > INITIAL_DELAY then
-        if (now - state.last) > REPEAT_INTERVAL then
-          try_move(button)
-          state.last = now
-        end
-      end
-    end
-  end
-
   video_player.update(dt)
 end
 
@@ -112,18 +97,11 @@ function on_press(btn)
     video_player.stop()
   end
 
-  held[btn] = true
-  hold_state[btn] = {
-    start = get_time(),
-    last = get_time()
-  }
-
   try_move(btn)
 end
 
-function on_release(btn)
-  held[btn] = nil
-  hold_state[btn] = nil
+function on_repeat(btn)
+  try_move(btn)
 end
 
 function try_move(btn)

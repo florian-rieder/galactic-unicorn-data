@@ -1,30 +1,30 @@
-ENTRYPOINT_SCRIPT_NAME = "main.lua"
-_MANIFEST = {}
-
 local Text = require("lib.text")
 local Font4x6 = require("lib.fonts.4x6")
 
 local text = Text.new(Font4x6)
 
-CURSOR_COLOR = rgb(255, 255, 255)
-CURSOR_BLINK_HZ = 1.5
+local _MANIFEST = {}
+local ENTRYPOINT_SCRIPT_NAME = "main.lua"
+
+local CURSOR_COLOR = rgb(255, 255, 255)
+local CURSOR_BLINK_HZ = 1.5
 -- Cursor input move repeat
-INITIAL_DELAY = 0.25
-REPEAT_INTERVAL = 0.1
+local REPEAT_DELAY = 0.25
+local REPEAT_INTERVAL = 0.1
 
 -- TILE×TILE pixels per slot; TILE_COLS * TILE_ROWS slots (row-major).
 -- Values set in refresh_tile_geometry_from_manifest() from screen size and #_MANIFEST.
-TILE = 1
-TILE_COLS = SCREEN_W // TILE
-TILE_ROWS = SCREEN_H // TILE
-TEXT_HEIGHT = text.get_text_height()
-MENU_H = SCREEN_H - TEXT_HEIGHT
+local TILE = 1
+local TILE_COLS = SCREEN_W // TILE
+local TILE_ROWS = SCREEN_H // TILE
+local TEXT_HEIGHT = text.get_text_height()
+local MENU_H = SCREEN_H - TEXT_HEIGHT
+
+
 
 -- Cursor in tile coordinates (0 .. TILE_COLS-1, 0 .. TILE_ROWS-1)
-cursor_x = 0
-cursor_y = 0
-held = {}
-hold_state = {}
+local cursor_x = 0
+local cursor_y = 0
 
 -- Create the composite manifest table from a file system walk
 -- Any top level directory containing a `manifest.lson` file is considered to be a game
@@ -127,27 +127,12 @@ function setup()
   _MANIFEST = collect_manifests()
   refresh_tile_geometry_from_manifest()
   build_menu_text()
+  set_repeat_delay(REPEAT_DELAY)
+  set_repeat_interval(REPEAT_INTERVAL)
 end
 
 function update(delta_time)
-  local now = get_time()
-
   text.scroll(delta_time)
-
-  for button, _ in pairs(held) do
-    local state = hold_state[button]
-
-    if state then
-      local held_time = now - state.start
-
-      if held_time > INITIAL_DELAY then
-        if (now - state.last) > REPEAT_INTERVAL then
-          move_cursor(button)
-          state.last = now
-        end
-      end
-    end
-  end
 end
 
 function draw()
@@ -187,12 +172,6 @@ function draw_cursor()
 end
 
 function on_press(button)
-  held[button] = true
-    hold_state[button] = {
-    start = get_time(),
-    last = get_time()
-  }
-
   if button == "MENU" then
     local i = tile_to_manifest_index(cursor_x, cursor_y)
     local game = _MANIFEST[i]
@@ -205,9 +184,8 @@ function on_press(button)
   move_cursor(button)
 end
 
-function on_release(button)
-  held[button] = nil
-  hold_state[button] = nil
+function on_repeat(button)
+  move_cursor(button)
 end
 
 function move_cursor(button)

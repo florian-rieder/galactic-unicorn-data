@@ -12,13 +12,13 @@ local CURSOR_BLINK_HZ = 1.5
 local GAME_OVER_BLINK_HZ = 2.0
 local MINE_BLINK_HZ = 1.1
 -- Cursor input move repeat
-local INITIAL_DELAY = 0.25
+local REPEAT_DELAY = 0.25
 local REPEAT_INTERVAL = 0.1
 
 -- Colors for numbers around mines, based on the colors of the original game
 local NUMBERS_COLORS = {
   [1] = rgb(0, 0, 255),     -- Blue       - 1 adjacent mine
-  [2] = rgb(0, 255, 0),     -- Green.     - 2 adjacent mines
+  [2] = rgb(0, 255, 0),     -- Green      - 2 adjacent mines
   [3] = rgb(255, 0, 0),     -- Red        - 3 adjacent mines
   [4] = rgb(0, 0, 128),     -- Dark Blue  - 4 adjacent mines
   [5] = rgb(128, 0, 0),     -- Dark Red   - 5 adjacent mines
@@ -35,9 +35,6 @@ local game_over = false
 local is_lost = false
 local is_win = false
 local remaining_safe_cells = 0
-local held = {}
-local hold_state = {}
-
 
 -- Visits 8-neighbors of (x, y); stops if fn(nx, ny) returns truthy.
 local function for_each_neighbor(x, y, fn)
@@ -217,26 +214,9 @@ function reset()
 end
 
 function setup()
+  set_repeat_delay(REPEAT_DELAY)
+  set_repeat_interval(REPEAT_INTERVAL)
   init_grid()
-end
-
-function update()
-  local now = get_time()
-
-  for button, _ in pairs(held) do
-    local state = hold_state[button]
-
-    if state then
-      local held_time = now - state.start
-
-      if held_time > INITIAL_DELAY then
-        if (now - state.last) > REPEAT_INTERVAL then
-          move_cursor(button)
-          state.last = now
-        end
-      end
-    end
-  end
 end
 
 function draw()
@@ -305,12 +285,6 @@ function on_press(button)
     return
   end
 
-    held[button] = true
-    hold_state[button] = {
-    start = get_time(),
-    last = get_time()
-  }
-
   -- Reveal the cell
   if button == "MENU" then reveal_cell(cursor_x, cursor_y)
   -- Flag suspected mine
@@ -320,9 +294,8 @@ function on_press(button)
   end
 end
 
-function on_release(button)
-  held[button] = nil
-  hold_state[button] = nil
+function on_repeat(button)
+  move_cursor(button)
 end
 
 function move_cursor(button)
