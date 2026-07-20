@@ -126,9 +126,15 @@ end
 
 ---- Class instance methods
 
+-- Return the magnitude squared of the vector
+function Vector2.mt:length_squared()
+  -- By definition, the dot product of a vector with itself gives its length squared
+  return Vector2.dot(self, self)
+end
+
 -- Return the magnitude of the vector
 function Vector2.mt:length()
-  return math.sqrt(self.x * self.x + self.y * self.y)
+  return math.sqrt(self:length_squared())
 end
 
 -- Return a normalized (length == 1) version of the vector

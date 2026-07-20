@@ -161,7 +161,8 @@ end
 
 -- Return the magnitude squared of the vector (avoids square root)
 function Vector3.mt:length_squared()
-  return self.x * self.x + self.y * self.y + self.z * self.z
+  -- By definition, the dot product of a vector with itself gives its length squared
+  return Vector3.dot(self, self)
 end
 
 -- Return the magnitude of the vector
