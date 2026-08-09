@@ -157,6 +157,12 @@ function Vector3.rotate(vec, axis, angle)
   return vec * c + cross * s + axis * dot * (1 - c)
 end
 
+function Vector3.angle(a, b)
+  -- see https://www.geeksforgeeks.org/physics/angle-between-two-vectors-formula/
+  -- angle = acos[(a.b) / (|a| * |b|)]
+  return math.acos(Vector3.dot(a, b) / (a:length() * b:length()))
+end
+
 ---- Class instance methods
 
 -- Return the magnitude squared of the vector (avoids square root)
@@ -308,6 +314,16 @@ if (...) == nil then
 
   ok = pcall(function() return v1 * "hello" end)
   assert(not ok, "multiplying a Vector3 by a string should throw")
+
+  -- Check Vector3.angle
+  local angle_same = Vector3.angle(Vector3.new(1, 0, 0), Vector3.new(2, 0, 0))
+  assert(math.abs(angle_same) < 0.0001)
+
+  local angle_perpendicular = Vector3.angle(Vector3.new(1, 0, 0), Vector3.new(0, 1, 0))
+  assert(math.abs(angle_perpendicular - math.pi / 2) < 0.0001)
+
+  local angle_opposite = Vector3.angle(Vector3.new(1, 0, 0), Vector3.new(-1, 0, 0))
+  assert(math.abs(angle_opposite - math.pi) < 0.0001)
 
   print("Vector3: all tests passed !")
 end

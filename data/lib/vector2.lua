@@ -117,11 +117,19 @@ function Vector2.dot(a, b)
   return a.x * b.x + a.y * b.y
 end
 
+-- Manhattan distance between two Vector2
 function Vector2.manhattan_distance(a,b)
   if not is_vector2(a) or not is_vector2(b) then
     error("attempt to compute Manhattan distance with a non-Vector2 value", 2)
   end
   return math.abs(a.x - b.x) + math.abs(a.y - b.y)
+end
+
+-- Angle between two Vector2
+function Vector2.angle(a, b)
+  -- see https://www.geeksforgeeks.org/physics/angle-between-two-vectors-formula/
+  -- angle = acos[(a.b) / (|a| * |b|)]
+  return math.acos(Vector2.dot(a, b) / (a:length() * b:length()))
 end
 
 ---- Class instance methods
@@ -260,6 +268,16 @@ if (...) == nil then
   local float_vector = Vector2.new(1.45, 2.8)
   local floored = float_vector:floor()
   assert(floored.x == 1 and floored.y == 2)
+
+  -- Check Vector2.angle
+  local angle_same = Vector2.angle(Vector2.new(1, 0), Vector2.new(2, 0))
+  assert(math.abs(angle_same) < 0.0001)
+
+  local angle_perpendicular = Vector2.angle(Vector2.new(1, 0), Vector2.new(0, 1))
+  assert(math.abs(angle_perpendicular - math.pi / 2) < 0.0001)
+
+  local angle_opposite = Vector2.angle(Vector2.new(1, 0), Vector2.new(-1, 0))
+  assert(math.abs(angle_opposite - math.pi) < 0.0001)
 
   print("Vector2: all tests passed !")
 end
