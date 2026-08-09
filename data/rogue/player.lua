@@ -10,6 +10,7 @@ local XP_EXPONENT = 1.8
 local LEVEL_UP_HEAL_PERCENTAGE = 0.1
 
 local function xp_required_for_level(lvl)
+  if lvl < 0 then return 0 end
   return math.floor(XP_BASE * (lvl ^ XP_EXPONENT))
 end
 
@@ -70,6 +71,14 @@ end
 
 function Player.get_max_health()
   return max_health
+end
+
+function Player.get_xp_requirement_to_next_level()
+  return next_level_xp_requirement - xp
+end
+
+function Player.get_xp_gained_to_next_level()
+  return xp - xp_required_for_level(level - 1)
 end
 
 function Player.take_damage(damage)

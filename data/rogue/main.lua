@@ -6,9 +6,20 @@ local Enum = require("lib.enum")
 player = require("rogue.player")
 map = require("rogue.map") -- Make map a global
 
-local healthbar = require("rogue.healthbar")
-local viewport = require("rogue.viewport")
+local VerticalProgressBar = require("rogue.verticalprogressbar")
 local Enemy = require("rogue.enemy")
+
+local viewport = require("rogue.viewport")
+local xp_bar = VerticalProgressBar.new(
+  0, 100,
+  SCREEN_W - 2,
+  rgb(255, 255, 0)
+)
+local health_bar = VerticalProgressBar.new(
+  100, 100,
+  SCREEN_W - 1,
+  rgb(255, 0, 0)
+)
 
 local PLAYER_COLOR = rgb(255, 255, 2)
 local WALL_COLOR = rgb(191, 191, 191)
@@ -46,8 +57,10 @@ function setup()
   player.set_on_die(on_die)
   player.set_on_level_up(on_level_up)
 
-  healthbar.set_max(player.get_max_health())
-  healthbar.set_value(player.get_health())
+  health_bar:set_max(player.get_max_health())
+  health_bar:set_value(player.get_health())
+  xp_bar:set_max(player.get_xp_requirement_to_next_level())
+  xp_bar:set_value(player.get_xp_gained_to_next_level())
 
   game_state = GameState.PLAYING
 
@@ -55,7 +68,9 @@ function setup()
 end
 
 function on_level_up()
-  healthbar.set_max(player.get_max_health())
+  health_bar:set_max(player.get_max_health())
+  xp_bar:set_max(player.get_xp_requirement_to_next_level())
+  xp_bar:set_value(player.get_xp_gained_to_next_level())
 end
 
 function on_die()
@@ -112,11 +127,12 @@ function render()
   set_pixel(screen_player_pos.x, screen_player_pos.y, PLAYER_COLOR)
 
   -- Draw health bar
-  healthbar.draw()
+  health_bar:draw()
+  xp_bar:draw()
 end
 
-function on_press(btn)
-  if game_state == GameState.LOST or game_state == GameState.WON then
+function step(btn)
+ if game_state == GameState.LOST or game_state == GameState.WON then
     -- Reset the game if any key is pressed while the game is over
     setup()
   end
@@ -149,9 +165,17 @@ function on_press(btn)
   -- Heal each turn
   player.heal(HEAL_PER_TURN)
 
-  healthbar.set_value(player.get_health())
+  health_bar:set_value(player.get_health())
 
   render()
+end
+
+function on_press(btn)
+  step(btn)
+end
+
+function on_repeat(btn)
+  step(btn)
 end
 
 function move(direction)
@@ -166,6 +190,7 @@ function move(direction)
 
       if enemy.dead then
         player.gain_xp(enemy:get_xp())
+        xp_bar:set_value(player.get_xp_gained_to_next_level())
       end
       return
     end
