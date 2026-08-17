@@ -3,9 +3,8 @@ local Vector2 = require("lib.vector2")
 
 MAP_WIDTH = 25
 MAP_HEIGHT = 25
-
-local N_SPACE_PARTITIONS = 3
-local MINIMUM_ROOM_SIZE = 4
+N_SPACE_PARTITIONS = 3
+MINIMUM_ROOM_SIZE = 4
 
 local BLOCK_SIZE = Vector2.new(
   math.floor(MAP_WIDTH / N_SPACE_PARTITIONS),
@@ -145,7 +144,7 @@ function M.generate()
       table.insert(vertices, room_id) -- add room_id to list of vertices (nodes)
   end
 
-  -- Use Prim's algorithm to compute the Minimum Spanning Tree (MST) of our graph
+  -- Use Prim's algorithm to compute the Minimum Spanning Tree (MST) of our random weighted graph
   -- to ensure all rooms are reachable by at least 1 other room
   -- See https://en.wikipedia.org/wiki/Minimum_spanning_tree
   local corridor_edges = Prim(vertices, edges)
@@ -155,10 +154,10 @@ function M.generate()
     local start_room = M.rooms[edge.a]
     local end_room = M.rooms[edge.b]
 
-    local start_x = start_room.x + math.floor(start_room.width/2)
-    local start_y = start_room.y + math.floor(start_room.height/2)
-    local end_x = end_room.x + math.floor(end_room.width/2)
-    local end_y = end_room.y + math.floor(end_room.height/2)
+    local start_x = start_room.x + 1 + math.floor(start_room.width/2 - 1)
+    local start_y = start_room.y + 1 + math.floor(start_room.height/2 - 1)
+    local end_x = end_room.x + 1 + math.floor(end_room.width/2 - 1)
+    local end_y = end_room.y + 1 + math.floor(end_room.height/2 - 1)
 
     local diff_x = start_x - end_x
     local diff_y = start_y - end_y
@@ -247,6 +246,8 @@ end
 
 function M.can_move(new_pos)
   local tile_on_new_pos = map.get_tile(new_pos.x, new_pos.y)
+
+  if not tile_on_new_pos then return false end
 
   -- Movement rules
   if tile_on_new_pos.type == TileType.VOID then return false end
