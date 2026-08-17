@@ -1,15 +1,15 @@
-local Vector3 = require("lib.vector3")
+Vector3 = require("lib.vector3")
 
-local RADIUS = 6
-local CENTER = Vector3.new(SCREEN_W / 2, SCREEN_H / 2 - 1 / 2, 5)
-local CAMERA_DISTANCE = 0
-local TINT = rgb(255, 255, 0)
+RADIUS = 6
+CENTER = Vector3.new(SCREEN_W / 2 - 1 / 2, SCREEN_H / 2 - 1 / 2, 5)
+CAMERA_DISTANCE = 0
+ROTATION_SPEED = 0.5
+TINT = rgb(46, 128, 241)
 
-local light_direction = Vector3.new(1, 0, 0)
-
+light_direction = Vector3.new(1, 0, 0)
 
 function update(dt)
-  light_direction = Vector3.rotate(light_direction, Vector3.DOWN, dt)
+  light_direction = Vector3.rotate(light_direction, Vector3.DOWN, dt * ROTATION_SPEED)
 end
 
 function draw()
