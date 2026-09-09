@@ -24,7 +24,7 @@ Other useful references:
 ```lua
 return {
     title = "The name of your cartridge",
-    color = "rgb(255, 255, 255)",
+    color = rgb(255, 255, 255),
     author = "You",
 }
 ```
