@@ -1,14 +1,16 @@
 DEAD_COLOR = rgb(0, 0, 0)
 ALIVE_COLOR = rgb(248, 98, 241)
-GENERATIONS_PER_SECOND = 12
 
+GENERATIONS_PER_SECOND = 12
 OVERCROWDING_THRESHOLD = 3
 UNDERPOPULATION_THRESHOLD = 2
 BIRTH_THRESHOLD = 3
 
 CELLS = {}
 
-local last_update = 0
+last_update = 0
+now = 0
+pause = false
 
 -- Translate a cell position into an index for the CELLS table
 function idx(x, y)
@@ -41,7 +43,7 @@ function get_alive_neighbors_count(x, y)
   return count
 end
 
-function setup()
+function generate_random_board()
   for x = 0, SCREEN_W -1 do
     for y = 0, SCREEN_H -1 do
       local is_alive = math.random(1, 100) < 30
@@ -52,12 +54,23 @@ function setup()
       end
     end
   end
+end
 
-  last_update = get_time()
+function new_game()
+  generate_random_board()
+  last_update = 0
+  now = 0
+  pause = false
+end
+
+function setup()
+  new_game()
 end
 
 function update(delta_time)
-  local now = get_time()
+  if pause then return end
+
+  now = now + delta_time
   if now - last_update < 1 / GENERATIONS_PER_SECOND then return end
 
   local new_cells = {}
@@ -84,6 +97,8 @@ function update(delta_time)
 end
 
 function draw()
+  if pause then return end
+
   clear()
   for x = 0, SCREEN_W -1 do
     for y = 0, SCREEN_H -1 do
@@ -96,4 +111,10 @@ function draw()
       end
     end
   end
+end
+
+function on_press(btn)
+  if btn == "MENU" then pause = not pause
+  elseif btn == "ESC" then new_game()
+  else return end
 end
