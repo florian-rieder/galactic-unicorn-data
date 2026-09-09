@@ -1,5 +1,3 @@
-Vector2 = require("lib.vector2")
-
 DEAD_COLOR = rgb(0, 0, 0)
 ALIVE_COLOR = rgb(248, 98, 241)
 GENERATIONS_PER_SECOND = 12
@@ -13,26 +11,24 @@ CELLS = {}
 local last_update = 0
 
 -- Translate a cell position into an index for the CELLS table
-function idx(pos)
-  local x = pos.x
-  local y = pos.y
-
+function idx(x, y)
   -- Loop around the edges
-  if pos.x < 0 then x = SCREEN_W - 1
-  elseif pos.x >= SCREEN_W then x = 0 end
-  if pos.y < 0 then y = SCREEN_H - 1
-  elseif pos.y >= SCREEN_H then y = 0 end
+  if x < 0 then x = SCREEN_W - 1
+  elseif x >= SCREEN_W then x = 0 end
+  if y < 0 then y = SCREEN_H - 1
+  elseif y >= SCREEN_H then y = 0 end
 
   return x + y * SCREEN_W
 end
 
-function get_alive_neighbors_count(pos)
+function get_alive_neighbors_count(x, y)
   local count = 0
   for dx = -1, 1 do
     for dy = -1, 1 do
       if dx == 0 and dy == 0 then goto continue end
-      local thepos = pos + Vector2.new(dx, dy)
-      local is_alive = CELLS[idx(thepos)]
+      local px = x + dx
+      local py = y + dy
+      local is_alive = CELLS[idx(px, py)]
 
       if is_alive then
         count = count + 1
@@ -49,8 +45,7 @@ function setup()
   for x = 0, SCREEN_W -1 do
     for y = 0, SCREEN_H -1 do
       local is_alive = math.random(1, 100) < 30
-      local pos = Vector2.new(x, y)
-      local index = idx(pos)
+      local index = idx(x, y)
 
       if is_alive then
         CELLS[index] = true
@@ -68,10 +63,9 @@ function update(delta_time)
   local new_cells = {}
   for x = 0, SCREEN_W -1 do
     for y = 0, SCREEN_H -1 do
-      local pos = Vector2.new(x, y)
-      local index = idx(pos)
+      local index = idx(x, y)
       local is_alive = CELLS[index]
-      local neighbors = get_alive_neighbors_count(pos)
+      local neighbors = get_alive_neighbors_count(x, y)
 
       if is_alive then
         if neighbors >= UNDERPOPULATION_THRESHOLD and neighbors <= OVERCROWDING_THRESHOLD then
@@ -93,8 +87,7 @@ function draw()
   clear()
   for x = 0, SCREEN_W -1 do
     for y = 0, SCREEN_H -1 do
-      local pos = Vector2.new(x, y)
-      local is_alive = CELLS[idx(pos)]
+      local is_alive = CELLS[idx(x, y)]
 
       if is_alive then
         set_pixel(x, y, ALIVE_COLOR)
