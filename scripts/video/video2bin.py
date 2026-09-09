@@ -142,7 +142,7 @@ def extract_frames(
 
     cap.release()
 
-    return max(1, min(255, round(original_framerate / frame_step)))
+    return original_framerate
 
 
 def read_frame(frame_path, color=False):
@@ -325,7 +325,7 @@ def main():
         encoding,
         image_size[0],
         image_size[1],
-        max(1, min(255, round(framerate / args.frame_step))),
+        max(1, min(255, round(framerate / frame_step))),
     )
     total = len(files)
 
