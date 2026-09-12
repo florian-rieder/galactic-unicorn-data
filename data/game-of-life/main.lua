@@ -4,9 +4,10 @@ ALIVE_COLOR = rgb(248, 98, 241)
 
 -- Simulation settings
 GENERATIONS_PER_SECOND = 12
-OVERCROWDING_THRESHOLD = 3
-UNDERPOPULATION_THRESHOLD = 2
-BIRTH_THRESHOLD = 3
+SURVIVE_MAX = 3
+SURVIVE_MIN = 2
+BIRTH_COUNT = 3
+
 
 -- State
 board = {}
@@ -30,6 +31,7 @@ function get_alive_neighbors_count(x, y)
   for dx = -1, 1 do
     for dy = -1, 1 do
       if dx == 0 and dy == 0 then goto continue end
+
       local px = x + dx
       local py = y + dy
       local is_alive = board[idx(px, py)]
@@ -46,8 +48,8 @@ function get_alive_neighbors_count(x, y)
 end
 
 function generate_random_board()
-  for x = 0, SCREEN_W -1 do
-    for y = 0, SCREEN_H -1 do
+  for x = 0, SCREEN_W - 1 do
+    for y = 0, SCREEN_H - 1 do
       local is_alive = math.random(1, 100) < 30
       local index = idx(x, y)
 
@@ -76,18 +78,18 @@ function update(delta_time)
   if now - last_update < 1 / GENERATIONS_PER_SECOND then return end
 
   local new_board = {}
-  for x = 0, SCREEN_W -1 do
-    for y = 0, SCREEN_H -1 do
+  for x = 0, SCREEN_W - 1 do
+    for y = 0, SCREEN_H - 1 do
       local index = idx(x, y)
       local is_alive = board[index]
       local neighbors = get_alive_neighbors_count(x, y)
 
       if is_alive then
-        if neighbors >= UNDERPOPULATION_THRESHOLD and neighbors <= OVERCROWDING_THRESHOLD then
+        if neighbors >= SURVIVE_MIN and neighbors <= SURVIVE_MAX then
           new_board[index] = true
         end
       else
-        if neighbors == BIRTH_THRESHOLD then
+        if neighbors == BIRTH_COUNT then
           new_board[index] = true
         end
       end
@@ -102,8 +104,8 @@ function draw()
   if pause then return end
 
   clear()
-  for x = 0, SCREEN_W -1 do
-    for y = 0, SCREEN_H -1 do
+  for x = 0, SCREEN_W - 1 do
+    for y = 0, SCREEN_H - 1 do
       local is_alive = board[idx(x, y)]
 
       if is_alive then

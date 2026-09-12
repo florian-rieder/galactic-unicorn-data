@@ -1,5 +1,5 @@
 return {
   title = "Game of life",
-  color = rgb(106, 0, 255),
+  color = rgb(248, 98, 241),
   author = "Florian Rieder"
 }
